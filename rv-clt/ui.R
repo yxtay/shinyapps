@@ -82,7 +82,7 @@ tabAbout <- function() {
                a("Github", href = "https://github.com/yxtay/")),
              
              p(strong("Source Code:"),
-               a("Github repository", href = "https://github.com/yxtay/"))
+               a("Github repository", href = "https://github.com/yxtay/shinyapps/tree/master/rv-clt"))
     )
 }
 
