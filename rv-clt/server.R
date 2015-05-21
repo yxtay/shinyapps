@@ -60,7 +60,7 @@ dist <- list(
 # parameters sliderInput function ----
 ###
 
-sliderParametersInput <- function(inputParName, parNum, distPar) {
+sliderParInput <- function(inputParName, parNum, distPar) {
     if (length(distPar) >= parNum) {
         parSpec <- distPar[[parNum]]
         sliderInput(inputParName, names(distPar)[[parNum]],
@@ -110,17 +110,17 @@ shinyServer(function(input, output) {
     
     # 1st parameter
     output$par1Input <- renderUI({
-        sliderParametersInput("par1", 1, distInfo()$par)
+        sliderParInput("par1", 1, distInfo()$par)
     })
     
     # 2nd parameter
     output$par2Input <- renderUI({
-        sliderParametersInput("par2", 2, distInfo()$par)
+        sliderParInput("par2", 2, distInfo()$par)
     })
     
     # 3rd parameter
     output$par3Input <- renderUI({
-        sliderParametersInput("par3", 3, distInfo()$par)
+        sliderParInput("par3", 3, distInfo()$par)
     })
     
     ###
