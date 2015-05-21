@@ -1,5 +1,4 @@
 library(shiny)
-library(ggplot2)
 
 ###
 # probability distributions list ----
@@ -58,24 +57,33 @@ dist <- list(
 )
 
 ###
+# parameters sliderInput function ----
+###
+
+sliderParametersInput <- function(inputParName, parNum, distPar) {
+    if (length(distPar) >= parNum) {
+        parSpec <- distPar[[parNum]]
+        sliderInput(inputParName, names(distPar)[[parNum]],
+                    min = parSpec[1], max = parSpec[2],
+                    value = parSpec[3], step = parSpec[4])
+    }
+}
+
+###
 # plotting functions ----
 ###
 
 # plotting function for base plot
 doPlot <- function(sample, title){
     title <- paste0("Distribution of ", title)
-    hist(sample, freq = F, col = "skyblue",
+    hist(sample, breaks = 30, freq = F, col ="skyblue",
          main = title, xlab = "Values")
     lines(density(sample, bw = "nrd"), col = "blue3", lwd = 2)
-    smean <- mean(sample, na.rm = T)
-    ssd <- sd(sample, na.rm = T)
-    limits <- par("usr")
-    x <- seq(limits[1], limits[2], length.out = 100)
-    lines(x, dnorm(x, smean, ssd), col = "red3", lwd = 2)
+    curve(dnorm(x, mean(sample), sd(sample)), n = 512,
+          xlim = par("usr")[1:2], add = T, col = "red3", lwd = 2)
     legend("topright", bty = "n",
            legend = c("kernel density", "normal density"),
-           col = c("blue3", "red3"),
-           lwd = 2)
+           col = c("blue3", "red3"), lwd = 2)
 }
 
 # plotting function for qqplot
@@ -83,25 +91,6 @@ doQQplot <- function(sample, title) {
     title <- paste0("Normal Q-Q Plot of ", title)
     qqnorm(sample, pch = 4, main = title, col = rgb(0, 0, 0, 0.2))
     qqline(sample, col = "red3", lwd = 2)
-}
-
-# plotting function for ggplot
-doGGplot <- function(sample, title) {
-    title <- paste0("Distribution of ", title)
-    smean <- mean(sample, na.rm = T)
-    ssd <- sd(sample, na.rm = T)
-    ggplot(data.frame(sample)) + 
-        geom_histogram(aes(x = sample, y = ..density..),
-                       fill = "skyblue",
-                       color = "black") + 
-        geom_density(aes(x = sample, color = "kernel density"), size = 1) + 
-        stat_function(fun = dnorm, 
-                      arg = list(mean = smean, sd = ssd),
-                      aes(color = "normal density"),
-                      size = 1) +
-        labs(title = title, x = "Values", y = "Density") +
-        scale_color_discrete("") + 
-        theme_bw()
 }
 
 ###
@@ -121,39 +110,17 @@ shinyServer(function(input, output) {
     
     # 1st parameter
     output$par1Input <- renderUI({
-        # trigger from distribution selection
-        input$dist
-        
-        par1spec = distInfo()$par[[1]]
-        sliderInput("par1", names(distInfo()$par)[1],
-                    min = par1spec[1], max = par1spec[2],
-                    value = par1spec[3], step = par1spec[4])
+        sliderParametersInput("par1", 1, distInfo()$par)
     })
     
     # 2nd parameter
     output$par2Input <- renderUI({
-        # trigger from distribution selection
-        input$dist
-        
-        if(length(distInfo()$par) >= 2) { # for 2nd parameter
-            par2spec = distInfo()$par[[2]]
-            sliderInput("par2", names(distInfo()$par)[2],
-                        min = par2spec[1], max = par2spec[2],
-                        value = par2spec[3], step = par2spec[4])
-        }
+        sliderParametersInput("par2", 2, distInfo()$par)
     })
     
     # 3rd parameter
     output$par3Input <- renderUI({
-        # trigger from distribution selection
-        input$dist
-        
-        if(length(distInfo()$par) >= 3) { # for 3rd parameter
-            par3spec = distInfo()$par[[3]]
-            sliderInput("par3", names(distInfo()$par)[3],
-                        min = par3spec[1], max = par3spec[2],
-                        value = par3spec[3], step = par3spec[4])
-        }
+        sliderParametersInput("par3", 3, distInfo()$par)
     })
     
     ###
@@ -175,7 +142,8 @@ shinyServer(function(input, output) {
             silent = T)
         
         # form function call string to be used for plot title
-        call <- paste(names(values), values, sep = " = ", collapse = ", ")
+        call <- paste(names(values), values, 
+                      sep = " = ", collapse = ", ")
         call <- sprintf("r%s(%s)", input$dist, call)
         
         # generate sample and compute sample means
@@ -205,15 +173,6 @@ shinyServer(function(input, output) {
     
     output$meansQQplot <- renderPlot({
         try(doQQplot(sample()$means, "Sample Means"), silent = T)
-    })
-    
-    # ggplot
-    output$sampleGGplot <- renderPlot({
-        try(doGGplot(sample()$sample, sample()$call), silent = T)
-        })
-    
-    output$meansGGplot <- renderPlot({
-        try(doGGplot(sample()$means, "Sample Means"), silent = T)
     })
     
     # sample summaries
