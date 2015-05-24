@@ -118,7 +118,7 @@ shinyUI(pageWithSidebar(
                href = "https://github.com/yxtay/shinyapps/tree/master/rv-clt"))
     ),
     
-    # Show a tabset that includes base plots, qqplot, ggplot, sample summary and about
+    # Show a tabset that includes base plots, qqplot, sample summary and instructions
     mainPanel(
         tabsetPanel(
             tabPanel("Base Plot",
