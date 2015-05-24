@@ -57,19 +57,6 @@ dist <- list(
 )
 
 ###
-# parameters sliderInput function ----
-###
-
-sliderParInput <- function(inputParName, parNum, distPar) {
-    if (length(distPar) >= parNum) {
-        parSpec <- distPar[[parNum]]
-        sliderInput(inputParName, names(distPar)[[parNum]],
-                    min = parSpec[1], max = parSpec[2],
-                    value = parSpec[3], step = parSpec[4])
-    }
-}
-
-###
 # plotting functions ----
 ###
 
@@ -105,22 +92,22 @@ shinyServer(function(input, output) {
     })
     
     ###
-    # Dynamic UI input for up to 3 parameters
+    # Dynamic UI input for up to 3 parameters created from loop
     ###
     
-    # 1st parameter
-    output$par1Input <- renderUI({
-        sliderParInput("par1", 1, distInfo()$par)
-    })
-    
-    # 2nd parameter
-    output$par2Input <- renderUI({
-        sliderParInput("par2", 2, distInfo()$par)
-    })
-    
-    # 3rd parameter
-    output$par3Input <- renderUI({
-        sliderParInput("par3", 3, distInfo()$par)
+    lapply(1:3, function(i) {
+        output[[paste0("parInput", i)]] <- renderUI({
+            distPar <- distInfo()$par
+            
+            if (length(distPar) >= i) {
+                parSpec <- distPar[[i]]
+                
+                sliderInput(paste0("par", i), 
+                            names(distPar)[[i]],
+                            min = parSpec[1], max = parSpec[2],
+                            value = parSpec[3], step = parSpec[4])
+            }
+        })
     })
     
     ###
@@ -137,6 +124,7 @@ shinyServer(function(input, output) {
                          c(input$par1),
                          c(input$par1, input$par2),
                          c(input$par1, input$par2, input$par3)))
+        # argument for number of observations is "nn" for hypergeometric
         try(names(values) <- c(switch(input$dist, hyper = "nn", "n"),
                              names(distInfo()$par)),
             silent = T)

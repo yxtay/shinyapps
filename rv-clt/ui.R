@@ -100,10 +100,11 @@ shinyUI(pageWithSidebar(
                h4("Parameters"),
                
                # sliders for distribution parameters setting
-               uiOutput("par1Input"),
-               uiOutput("par2Input"),
-               uiOutput("par3Input"),
-               actionButton("button", "New sample")    
+               lapply(1:3, function(i) {
+                   uiOutput(paste0("parInput", i))
+               }),
+               
+               actionButton("button", "New sample")
            ),
            
            strong("Created by YuXuan Tay"),
