@@ -130,7 +130,6 @@ shinyServer(function(input, output) {
             silent = T)
         
         # form function call string to be used for plot title
-        call <- sprintf("%.0f", values)
         call <- paste(names(values), call, 
                       sep = " = ", collapse = ", ")
         call <- sprintf("r%s(%s)", input$dist, call)
