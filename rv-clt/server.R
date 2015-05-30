@@ -130,7 +130,8 @@ shinyServer(function(input, output) {
             silent = T)
         
         # form function call string to be used for plot title
-        call <- paste(names(values), values, 
+        call <- sapply(values, format, scientific = F)
+        call <- paste(names(values), call, 
                       sep = " = ", collapse = ", ")
         call <- sprintf("r%s(%s)", input$dist, call)
         
