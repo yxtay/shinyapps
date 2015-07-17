@@ -88,7 +88,7 @@ shinyServer(function(input, output) {
     
     # selected distribution specs
     distInfo <- reactive({
-        spec <- dist[[input$dist]]
+        dist[[input$dist]]
     })
     
     ###
