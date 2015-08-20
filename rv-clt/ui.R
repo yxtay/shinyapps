@@ -1,4 +1,6 @@
 library(shiny)
+library(shinythemes)
+library(markdown)
 
 ###
 # probability distribution list for selection ----
@@ -24,61 +26,12 @@ choices <- list(
 )
 
 ###
-# instructions tab ----
-###
-
-tabInstructions <- function() {
-    tabPanel("Instructions",
-             h3("Central Limit Theorem"),
-             p("This Shiny app serves to demonstrate the",
-               strong("Central Limit Theorem."),
-               "The theorem states that the arithmetic mean ",
-               "of a sufficiently large number of ",
-               "independent and identically distributed random variables",
-               "will be approximately", strong("normally"), "distributed.",
-               "This is regardless of the underlying distribution, ",
-               "as long as the expected value and variance are well defined."),
-             p("The normality of a sample distribution can be checked ",
-               "by comparing the kernel density plot against the normal density. ",
-               "Alternatively, one can observe the QQ plot."),
-             
-             h4("Settings"),
-             p(strong("Probability Distribution"), "- ",
-               "A list of standard distributions from the base R package are available. ",
-               "Random samples are generated from the selected distribution. ",
-               "For more information on each distribution, please refer to the ",
-               a("R documentation.", 
-                 href = "https://stat.ethz.ch/R-manual/R-devel/library/stats/html/Distributions.html")),
-             
-             p(strong("Sample Size"), "- ",
-               "Sample size refers to the number of observations in a sample. ",
-               "From each sample, the sample mean is computed",
-               "to derive one observation for the distribution of sample means. ",
-               "The sample size can be varied to investigate the number of observations ",
-               "required for the sample means to become approximately normally distributed."),
-             p(strong("Sample Count"), "-",
-               "Sample count refers to the number of times the samples are replicated. ",
-               "Hence, the sample count determines the number of observations of sample means.",
-               "A sufficiently large sample count is necessary to generate ",
-               "a representative empirical distribution of the sample means."),
-             p("The total number of observations generated from the underlying distribution is: ",
-               "(sample size) * (sample count)."),
-             
-             p(strong("Parameters"), "- ",
-               "Parameters refer to the parameters of the underlying probability distributions. ",
-               "Due to the different number of parameters and parameter specifications, ",
-               "the slider bars updates dynamically depending on the distribution selected.",
-               "The parameters are named according to the R documentation.")
-    )
-}
-
-###
 # shiny ui ----
 ###
 
-shinyUI(pageWithSidebar(
+fluidPage(
     
-    headerPanel("Demonstration of Central Limit Theorem on Different Probability Distributions"),
+    titlePanel("Demonstration of Central Limit Theorem on Different Probability Distributions"),
     
     # side panel for settings for sample generation
     column(4,
@@ -94,21 +47,18 @@ shinyUI(pageWithSidebar(
                
                sliderInput("count", "Sample count", 
                            min = 1e2, max = 1e3, value = 500)
-               ),
-           
-           wellPanel(
-               h4("Parameters"),
-               
-               # sliders for distribution parameters setting
-               lapply(1:3, function(i) {
-                   uiOutput(paste0("parInput", i))
-               }),
-               
-               actionButton("button", "New sample")
            ),
            
-           strong("Created by YuXuan Tay"),
-           p(a("LinkedIn", 
+           # sliders for distribution parameters setting
+           uiOutput("parInput"),
+           
+           actionButton("button", "New sample"),
+           
+           hr(),
+           
+           p(strong("Created by YuXuan Tay"),
+             br(),
+             a("LinkedIn", 
                href = "https://www.linkedin.com/in/yxtay/"), 
              "|",
              a("Github", 
@@ -129,14 +79,20 @@ shinyUI(pageWithSidebar(
             tabPanel("QQ Plot",
                      plotOutput("sampleQQplot"),
                      plotOutput("meansQQplot")),
-
+            
             tabPanel("Sample Summary",
                      h4("Sample"),
                      verbatimTextOutput("sampleSummary"),
                      h4("Means"),
                      verbatimTextOutput("meansSummary")),
             
-            tabInstructions()
+            tabPanel("Instructions",
+                     includeMarkdown("instructions.md")),
+            
+            tabPanel("About",
+                     includeMarkdown("readme.md"))
         )
-    )
-))
+    ),
+    
+    theme = shinytheme("cosmo")
+)

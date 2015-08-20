@@ -36,10 +36,10 @@ dist <- list(
                  par = list(meanlog = c(-10, 10, 0, 0.1), 
                             sdlog = c(0.01, 2, 1, 0.01))),
     multinom = list(func = rmultinom, 
-                    par = list("size", 
-                               "prob")),
+                    par = list(size = "size", 
+                               prob = "prob")),
     nbinom = list(func = rnbinom, 
-                  par = list(size = c(1, 100, 10, 1), 
+                  par = list(size = c(1, 100, 10, 0.1), 
                              prob = c(0.05, 0.95, 0.2, 0.01))),
     norm = list(func = rnorm, 
                 par = list(mean = c(-10, 10, 0, 0.1), 
@@ -76,7 +76,7 @@ doPlot <- function(sample, title){
 # plotting function for qqplot
 doQQplot <- function(sample, title) {
     title <- paste0("Normal Q-Q Plot of ", title)
-    qqnorm(sample, pch = 4, main = title, col = rgb(0, 0, 0, 0.2))
+    qqnorm(sample, bty = "n", main = title, col = rgb(0, 0, 0, 0.2), pch = 4)
     qqline(sample, col = "red3", lwd = 2)
 }
 
@@ -84,7 +84,7 @@ doQQplot <- function(sample, title) {
 # shiny server ----
 ###
 
-shinyServer(function(input, output) {
+function(input, output, session) {
     
     # selected distribution specs
     distInfo <- reactive({
@@ -95,19 +95,21 @@ shinyServer(function(input, output) {
     # Dynamic UI input for up to 3 parameters created from loop
     ###
     
-    lapply(1:3, function(i) {
-        output[[paste0("parInput", i)]] <- renderUI({
-            distPar <- distInfo()$par
+    output$parInput <- renderUI({
+        distPar <- distInfo()$par
+        
+        wellPanel(
+            h4("Parameters"),
             
-            if (length(distPar) >= i) {
+            lapply(seq_along(distPar), function(i) {
                 parSpec <- distPar[[i]]
                 
-                sliderInput(paste0("par", i), 
+                sliderInput(paste0("par", i),
                             names(distPar)[[i]],
                             min = parSpec[1], max = parSpec[2],
                             value = parSpec[3], step = parSpec[4])
-            }
-        })
+            })
+        )
     })
     
     ###
@@ -121,12 +123,12 @@ shinyServer(function(input, output) {
         # gather arguments for sample generation into a vector
         values <- c(input$count * input$size,
                     switch(length(distInfo()$par),
-                         c(input$par1),
-                         c(input$par1, input$par2),
-                         c(input$par1, input$par2, input$par3)))
+                           c(input$par1),
+                           c(input$par1, input$par2),
+                           c(input$par1, input$par2, input$par3)))
         # argument for number of observations is "nn" for hypergeometric
         try(names(values) <- c(switch(input$dist, hyper = "nn", "n"),
-                             names(distInfo()$par)),
+                               names(distInfo()$par)),
             silent = T)
         
         # form function call string to be used for plot title
@@ -167,4 +169,4 @@ shinyServer(function(input, output) {
     # sample summaries
     output$sampleSummary <- renderPrint(summary(sample()$sample))
     output$meansSummary <- renderPrint(summary(sample()$means))
-})
+}
